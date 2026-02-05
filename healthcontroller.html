@@ -1,0 +1,10 @@
+import { Request, Response } from "express";
+import HealthMetric from "../models/HealthMetric";
+
+export const getHealthMetrics = async (req: Request, res: Response) => {
+  const metrics = await HealthMetric.find({ userId: req.user.id }).sort({
+    createdAt: -1,
+  });
+
+  res.json(metrics);
+};

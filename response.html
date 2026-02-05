@@ -1,0 +1,23 @@
+import Sidebar from "../components/layout/Sidebar";
+import Header from "../components/layout/Header";
+import HealthChart from "../components/dashboard/HealthChart";
+import SleepTable from "../components/dashboard/SleepTable";
+import ChatPanel from "../components/layout/ChatPanel";
+
+export default function Dashboard() {
+  return (
+    <div className="grid grid-cols-[72px_1fr_360px] h-screen bg-gray-100 dark:bg-gray-900">
+      <Sidebar />
+
+      <main className="p-4 space-y-4">
+        <Header />
+        <div className="grid grid-cols-2 gap-4">
+          <HealthChart />
+          <SleepTable />
+        </div>
+      </main>
+
+      <ChatPanel />
+    </div>
+  );
+}

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Asklepios Dashboard</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* =======================
+   DESIGN TOKENS
+======================= */
+:root{
+  --bg-main:#E6F0FF;
+  --bg-card:#FFFFFF;
+  --primary:#2563EB;
+  --primary-soft:#E5EDFF;
+  --text-main:#0F172A;
+  --text-muted:#64748B;
+  --border-soft:#E5E7EB;
+  --success:#16A34A;
+  --warning:#F59E0B;
+  --danger:#DC2626;
+  --radius:14px;
+  --shadow:0 10px 30px rgba(0,0,0,.06);
+  --transition:all .2s ease;
+  --sidebar-width:72px;
+}
+
+/* =======================
+   RESET & BASE
+======================= */
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  background:var(--bg-main);
+  color:var(--text-main);
+}
+
+button{border:none;background:none;cursor:pointer;}
+a{text-decoration:none;color:inherit;}
+
+/* =======================
+   LAYOUT
+======================= */
+.app{
+  display:grid;
+  grid-template-columns: var(--sidebar-width) 1fr 360px;
+  gap:16px;
+  padding:16px;
+  height:100vh;
+}
+
+/* Sidebar */
+.sidebar{
+  background:var(--bg-card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:16px 0;
+  gap:28px;
+}
+
+.sidebar__icon{
+  width:40px;height:40px;
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  transition:var(--transition);
+}
+.sidebar__icon:hover{background:var(--primary-soft);}
+.sidebar__icon--active{background:var(--primary-soft);}
+
+/* Main content */
+.main{
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:16px;
+}
+
+/* Top header */
+.header{
+  background:var(--bg-card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:12px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.header__left{display:flex;align-items:center;gap:12px;}
+.header__logo{
+  width:40px;height:40px;
+  border-radius:10px;
+  background:var(--primary);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:700;
+}
+.header__title{font-weight:700;font-size:18px;}
+.header__version{font-size:12px;color:var(--text-muted);}
+
+.header__search{
+  background:var(--primary-soft);
+  border-radius:20px;
+  padding:8px 12px;
+  width:240px;
+  border:none;
+  outline:none;
+}
+
+/* Dashboard grid */
+.dashboard{
+  display:grid;
+  grid-template-columns:1.6fr 1fr;
+  gap:16px;
+}
+
+/* Card base */
+.card{
+  background:var(--bg-card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:16px;
+}
+
+/* Health chart */
+.chart-wrapper{
+  height:280px;
+}
+
+/* Health score */
+.health-score{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-top:12px;
+}
+.health-score__value{
+  font-size:32px;
+  font-weight:800;
+  color:var(--primary);
+}
+
+/* Sleep table */
+.table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+}
+.table th{
+  text-align:left;
+  font-size:12px;
+  color:var(--text-muted);
+  padding-bottom:8px;
+}
+.table td{
+  padding:10px 0;
+  border-bottom:1px solid var(--border-soft);
+}
+.badge{
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:600;
+}
+.badge--good{background:#DCFCE7;color:var(--success);}
+.badge--ok{background:#FEF3C7;color:var(--warning);}
+.badge--bad{background:#FEE2E2;color:var(--danger);}
+
+/* Progress bar */
+.progress{
+  width:100%;
+  height:6px;
+  background:var(--border-soft);
+  border-radius:10px;
+  overflow:hidden;
+}
+.progress__bar{
+  height:100%;
+  background:var(--primary);
+  border-radius:10px;
+}
+
+/* Chat panel */
+.chat{
+  background:var(--bg-card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+}
+.chat__header{
+  padding:12px 16px;
+  border-bottom:1px solid var(--border-soft);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.chat__body{
+  flex:1;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  overflow-y:auto;
+}
+.chat__bubble{
+  max-width:80%;
+  padding:10px 12px;
+  border-radius:16px;
+  line-height:1.4;
+}
+.chat__bubble--user{
+  background:var(--primary);
+  color:white;
+  align-self:flex-end;
+  border-bottom-right-radius:6px;
+}
+.chat__bubble--bot{
+  background:var(--primary-soft);
+  align-self:flex-start;
+  border-bottom-left-radius:6px;
+}
+
+.chat__input{
+  border-top:1px solid var(--border-soft);
+  padding:10px 12px;
+  display:flex;
+  gap:8px;
+}
+.chat__input input{
+  flex:1;
+  padding:8px 10px;
+  border-radius:20px;
+  border:1px solid var(--border-soft);
+  outline:none;
+}
+
+/* Responsive */
+@media (max-width:1024px){
+  .app{
+    grid-template-columns:var(--sidebar-width) 1fr;
+  }
+  .chat{display:none;}
+}
+@media (max-width:768px){
+  .app{
+    grid-template-columns:1fr;
+  }
+  .sidebar{flex-direction:row;height:64px;}
+  .dashboard{grid-template-columns:1fr;}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar__icon sidebar__icon--active">+</div>
+  <div class="sidebar__icon">📊</div>
+  <div class="sidebar__icon">📅</div>
+  <div class="sidebar__icon">👤</div>
+  <div class="sidebar__icon">🏠</div>
+  <div class="sidebar__icon">⚙️</div>
+  <div style="margin-top:auto;">
+    <img src="https://i.pravatar.cc/40" style="border-radius:50%" alt="avatar"/>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header__left">
+    <div class="header__logo">+</div>
+    <div>
+      <div class="header__title">Asklepios Dashboard</div>
+      <div class="header__version">v2.3_bugfix9</div>
+    </div>
+  </div>
+  <input class="header__search" placeholder="Search asklepios..."/>
+</header>
+
+<!-- DASHBOARD -->
+<section class="dashboard">
+
+<!-- LEFT COLUMN -->
+<div class="card">
+  <div class="chart-wrapper">
+    <canvas id="healthChart"></canvas>
+  </div>
+
+  <div class="health-score">
+    <div class="health-score__value">98.2%</div>
+    <div>Health Score</div>
+  </div>
+
+  <table class="table">
+    <tr>
+      <th>Sleep Level</th>
+      <th>Sleep Score</th>
+      <th></th>
+      <th></th>
+    </tr>
+
+    <tr>
+      <td>8 hours 33 minutes</td>
+      <td><span class="badge badge--good">Good</span></td>
+      <td>
+        <div class="progress"><div class="progress__bar" style="width:40%"></div></div>
+      </td>
+      <td><a href="#">Delete</a> · <a href="#">Edit</a></td>
+    </tr>
+
+    <tr>
+      <td>7 hours 22 minutes</td>
+      <td><span class="badge badge--bad">Bad</span></td>
+      <td>
+        <div class="progress"><div class="progress__bar" style="width:60%"></div></div>
+      </td>
+      <td><a href="#">Delete</a> · <a href="#">Edit</a></td>
+    </tr>
+
+    <tr>
+      <td>6 hours 19 minutes</td>
+      <td><span class="badge badge--ok">OK</span></td>
+      <td>
+        <div class="progress"><div class="progress__bar" style="width:90%"></div></div>
+      </td>
+      <td><a href="#">Delete</a> · <a href="#">Edit</a></td>
+    </tr>
+
+    <tr>
+      <td>5 hours 13 minutes</td>
+      <td><span class="badge badge--ok">OK</span></td>
+      <td>
+        <div class="progress"><div class="progress__bar" style="width:20%"></div></div>
+      </td>
+      <td><a href="#">Delete</a> · <a href="#">Edit</a></td>
+    </tr>
+
+    <tr>
+      <td>5 hours 13 minutes</td>
+      <td><span class="badge badge--bad">Bad</span></td>
+      <td>
+        <div class="progress"><div class="progress__bar" style="width:20%"></div></div>
+      </td>
+      <td><a href="#">Delete</a> · <a href="#">Edit</a></td>
+    </tr>
+  </table>
+</div>
+
+<!-- RIGHT COLUMN (CHAT) -->
+<div class="chat">
+  <div class="chat__header">
+    <div>Asklepios AI Assistant</div>
+    <div style="font-size:12px;color:var(--text-muted)">GPT-7 · 241 chats left</div>
+  </div>
+
+  <div class="chat__body">
+    <div class="chat__bubble chat__bubble--user">
+      Can you please diagnose my symptom? I'll describe it with an audio.
+    </div>
+
+    <div class="chat__bubble chat__bubble--bot">
+      Based on your audio, it appears you might be experiencing signs of eczema or dry skin irritation.
+      <br/><br/>
+      <strong>Possible Conditions</strong>
+      <ul>
+        <li>Eczema — Treatable · High Risk (98% confidence)</li>
+      </ul>
+      <a href="#">View Symptoms</a>
+    </div>
+
+    <div class="chat__bubble chat__bubble--user">
+      What? Sounds scary! What should I do, doc?
+    </div>
+
+    <div class="chat__bubble chat__bubble--bot">
+      I'm happy to recommend you several healthcare professionals.
+    </div>
+  </div>
+
+  <div class="chat__input">
+    <input placeholder="Type to start chatting..."/>
+    <button>➤</button>
+  </div>
+</div>
+
+</section>
+</main>
+</div>
+
+<script>
+// Sample line chart data (faithful to the reference trend)
+const ctx = document.getElementById('healthChart').getContext('2d');
+
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels:['','','','','','','','','','','',''],
+    datasets:[{
+      data:[90,65,60,75,50,48,70,40,78,55,90,65,60,75,50,40,70,55,75,65,78,53],
+      tension:0.25,
+      borderWidth:2,
+      pointRadius:2,
+      fill:false,
+      borderColor:'#2563EB'
+    }]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{display:false},
+      y:{ticks:{color:'#64748B'}}
+    }
+  }
+});
+</script>
+</body>
+</html>

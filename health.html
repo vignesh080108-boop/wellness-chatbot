@@ -1,0 +1,31 @@
+import { Line } from "react-chartjs-2";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "../../api/client";
+
+export default function HealthChart() {
+  const { data, isLoading } = useQuery(["health-metrics"], () =>
+    apiClient("/health")
+  );
+
+  if (isLoading) return <div>Loading...</div>;
+
+  const chartData = {
+    labels: data.map((_: any, i: number) => i),
+    datasets: [
+      {
+        data: data.map((d: any) => d.score),
+        borderColor: "#2563EB",
+        tension: 0.3,
+      },
+    ],
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
+      <Line data={chartData} />
+      <div className="mt-4 text-2xl font-bold text-blue-600">
+        98.2% Health Score
+      </div>
+    </div>
+  );
+}
